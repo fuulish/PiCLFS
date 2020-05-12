@@ -6,7 +6,7 @@ set -o nounset
 set -o errexit
 
 export LC_ALL=POSIX
-export PARALLEL_JOBS=`cat /proc/cpuinfo | grep cores | wc -l`
+export PARALLEL_JOBS=`cat /proc/cpuinfo | grep cores | head -n1 | awk '{print $4+1}'`
 export CONFIG_TARGET="aarch64-linux-gnu"
 export CONFIG_HOST=`echo ${MACHTYPE} | sed -e 's/-[^-]*/-cross/'`
 export CONFIG_LINUX_ARCH="arm64"
