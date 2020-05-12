@@ -181,6 +181,9 @@ extract $SOURCES_DIR/m4-1.4.18.tar.xz $BUILD_DIR
     --prefix=$TOOLS_DIR \
     --disable-static \
     --enable-shared )
+( cd ${BUILD_DIR}/m4-1.4.18 && patch -p0 < ${WORKSPACE_DIR}/patches/m4-1.4.18/freadahead.patch )
+( cd ${BUILD_DIR}/m4-1.4.18 && patch -p0 < ${WORKSPACE_DIR}/patches/m4-1.4.18/fseeko.patch )
+( cd ${BUILD_DIR}/m4-1.4.18 && patch -p0 < ${WORKSPACE_DIR}/patches/m4-1.4.18/stdio-impl.patch )
 make -j$PARALLEL_JOBS -C $BUILD_DIR/m4-1.4.18
 make -j$PARALLEL_JOBS install -C $BUILD_DIR/m4-1.4.18
 rm -rf $BUILD_DIR/m4-1.4.18
