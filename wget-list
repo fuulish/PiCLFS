@@ -20,8 +20,8 @@ https://github.com/dosfstools/dosfstools/releases/download/v4.1/dosfstools-4.1.t
 https://github.com/martinh/libconfuse/releases/download/v3.2.2/confuse-3.2.2.tar.xz
 https://github.com/pengutronix/genimage/releases/download/v11/genimage-11.tar.xz
 https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin
-https://github.com/raspberrypi/firmware/raw/master/boot/fixup4.dat
-https://github.com/raspberrypi/firmware/raw/master/boot/start4.elf
+https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat
+https://github.com/raspberrypi/firmware/raw/master/boot/start.elf
 https://github.com/raspberrypi/linux/archive/raspberrypi-kernel_1.20200212-1.tar.gz
 https://github.com/westes/flex/releases/download/v2.6.3/flex-2.6.3.tar.gz
 https://kernel.org/pub/linux/utils/util-linux/v2.35/util-linux-2.35.tar.xz
