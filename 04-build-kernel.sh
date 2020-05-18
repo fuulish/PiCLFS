@@ -7,10 +7,11 @@ set -o errexit
 
 export LC_ALL=POSIX
 export PARALLEL_JOBS=`cat /proc/cpuinfo | grep cores | head -n1 | awk '{print $4+1}'`
-export CONFIG_TARGET="aarch64-linux-gnu"
+export CONFIG_TARGET="arm-linux-gnueabi"
 export CONFIG_HOST=`echo ${MACHTYPE} | sed -e 's/-[^-]*/-cross/'`
-export CONFIG_LINUX_ARCH="arm64"
-export CONFIG_LINUX_KERNEL_DEFCONFIG="bcm2711_defconfig"
+export CONFIG_LINUX_ARCH="arm"
+# XXX make this one dependent on what we want to build for
+export CONFIG_LINUX_KERNEL_DEFCONFIG="bcm2835_defconfig"
 
 export WORKSPACE_DIR=$PWD
 export SOURCES_DIR=$WORKSPACE_DIR/sources
@@ -96,10 +97,14 @@ make -j$PARALLEL_JOBS ARCH=$CONFIG_LINUX_ARCH $CONFIG_LINUX_KERNEL_DEFCONFIG -C 
 make -j$PARALLEL_JOBS ARCH=$CONFIG_LINUX_ARCH HOSTCC="gcc -O2 -I$TOOLS_DIR/include -L$TOOLS_DIR/lib -Wl,-rpath,$TOOLS_DIR/lib" CROSS_COMPILE="$TOOLS_DIR/bin/$CONFIG_TARGET-" Image modules dtbs -C $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1
 make -j$PARALLEL_JOBS ARCH=$CONFIG_LINUX_ARCH HOSTCC="gcc -O2 -I$TOOLS_DIR/include -L$TOOLS_DIR/lib -Wl,-rpath,$TOOLS_DIR/lib" CROSS_COMPILE="$TOOLS_DIR/bin/$CONFIG_TARGET-" INSTALL_MOD_PATH=$ROOTFS_DIR modules_install -C $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1
 mkdir -pv $KERNEL_DIR/overlays
-cp -v $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1/arch/arm64/boot/Image $KERNEL_DIR
-cp -v $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1/arch/arm64/boot/dts/broadcom/*.dtb $KERNEL_DIR
+# XXX:FUX: only relevant for 64bit builds
+# cp -v $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1/arch/arm64/boot/dts/broadcom/*.dtb $KERNEL_DIR
+
+cp -v $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1/arch/${CONFIG_LINUX_ARCH}/boot/Image $KERNEL_DIR
 cp -v $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1/arch/arm/boot/dts/overlays/*.dtb* $KERNEL_DIR/overlays/
 cp -v $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1/arch/arm/boot/dts/overlays/README $KERNEL_DIR/overlays/
+cp -v $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1/arch/arm/boot/dts/*.dtb $KERNEL_DIR
+cp -v $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1/arch/arm/boot/dts/bcm*rpi*.dts $KERNEL_DIR
 
 rm -rf $BUILD_DIR/linux-raspberrypi-kernel_1.20200212-1
 
