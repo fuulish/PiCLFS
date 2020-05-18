@@ -75,7 +75,7 @@ $TOOLS_DIR/usr/bin/fakeroot -- $BUILD_DIR/_fakeroot.fs
 ln -svf rootfs.ext2 $IMAGES_DIR/rootfs.ext4
 mkdir -pv $IMAGES_DIR/boot
 cp -Rv $KERNEL_DIR/* $IMAGES_DIR/boot/
-cp -v $SOURCES_DIR/{bootcode.bin,fixup4.dat,start4.elf} $IMAGES_DIR/boot/
+cp -v $SOURCES_DIR/{bootcode.bin,fixup.dat,start.elf} $IMAGES_DIR/boot/
 echo "root=/dev/mmcblk0p2 rootwait console=tty1 console=ttyAMA0,115200" > $IMAGES_DIR/boot/cmdline.txt
 cat > $IMAGES_DIR/boot/config.txt << "EOF"
 # Please note that this is only a sample, we recommend you to change it to fit
@@ -102,19 +102,20 @@ gpu_mem_1024=100
 # fixes rpi (3B, 3B+, 3A+, 4B and Zero W) ttyAMA0 serial console
 dtoverlay=miniuart-bt
 
-# enable 64bits support
-arm_64bit=1
+enable_uart=1
+force_turbbo=1
+
 EOF
 cat > $BUILD_DIR/genimage.cfg << "EOF"
 image boot.vfat {
   vfat {
     files = {
-      "boot/bcm2711-rpi-4-b.dtb",
+      "boot/bcm2708-rpi-zero-w.dtb",
       "boot/bootcode.bin",
       "boot/cmdline.txt",
       "boot/config.txt",
-      "boot/fixup4.dat",
-      "boot/start4.elf",
+      "boot/fixup.dat",
+      "boot/start.elf",
       "boot/overlays",
       "boot/Image"
     }

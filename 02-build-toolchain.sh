@@ -9,8 +9,8 @@ umask 022
 
 export LC_ALL=POSIX
 export PARALLEL_JOBS=`cat /proc/cpuinfo | grep cores | head -n1 | awk '{print $4+1}'`
-export CONFIG_LINUX_ARCH="arm64"
-export CONFIG_TARGET="aarch64-linux-gnu"
+export CONFIG_LINUX_ARCH="arm"
+export CONFIG_TARGET="arm-linux-gnueabi"
 export CONFIG_HOST=`echo ${MACHTYPE} | sed -e 's/-[^-]*/-cross/'`
 
 export WORKSPACE_DIR=$PWD
@@ -383,8 +383,7 @@ mkdir -pv $BUILD_DIR/gcc-9.2.0/gcc-build
     --enable-threads \
     --without-isl \
     --without-cloog \
-    --with-abi="lp64" \
-    --with-cpu=cortex-a72 \
+    --with-cpu=arm1176jz-s \
     --enable-languages=c \
     --disable-shared \
     --without-headers \
@@ -461,8 +460,7 @@ mkdir -v $BUILD_DIR/gcc-9.2.0/gcc-build
     --disable-libquadmath \
     --enable-tls \
     --enable-threads \
-    --with-abi="lp64" \
-    --with-cpu=cortex-a72 \
+    --with-cpu=arm1176jz-s \
     --enable-languages=c,c++ \
     --with-build-time-tools=$TOOLS_DIR/$CONFIG_TARGET/bin \
     --enable-shared \

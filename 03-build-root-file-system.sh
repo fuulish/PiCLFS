@@ -7,9 +7,9 @@ set -o errexit
 
 export LC_ALL=POSIX
 export PARALLEL_JOBS=`cat /proc/cpuinfo | grep cores | head -n1 | awk '{print $4+1}'`
-export CONFIG_TARGET="aarch64-linux-gnu"
+export CONFIG_TARGET="arm-linux-gnueabi"
 export CONFIG_HOST=`echo ${MACHTYPE} | sed -e 's/-[^-]*/-cross/'`
-export CONFIG_LINUX_ARCH="arm64"
+export CONFIG_LINUX_ARCH="arm"
 
 export WORKSPACE_DIR=$PWD
 export SOURCES_DIR=$WORKSPACE_DIR/sources
@@ -99,12 +99,12 @@ mkdir -pv $BUILD_DIR $ROOTFS_DIR
 step "[1/9] Create root file system directory."
 rm -rf $ROOTFS_DIR
 mkdir -pv $ROOTFS_DIR/{boot,bin,dev,etc,lib,media,mnt,opt,proc,root,run,sbin,sys,tmp,usr}
-ln -snvf lib $ROOTFS_DIR/lib64
+ln -snvf lib $ROOTFS_DIR/lib
 mkdir -pv $ROOTFS_DIR/dev/{pts,shm}
 mkdir -pv $ROOTFS_DIR/etc/{network,profile.d}
 mkdir -pv $ROOTFS_DIR/etc/network/{if-down.d,if-post-down.d,if-pre-up.d,if-up.d}
 mkdir -pv $ROOTFS_DIR/usr/{bin,lib,sbin}
-ln -snvf lib $ROOTFS_DIR/usr/lib64
+ln -snvf lib $ROOTFS_DIR/usr/lib
 mkdir -pv $ROOTFS_DIR/var/lib
 
 step "[2/9] Creating Essential Files and Symlinks"
@@ -174,8 +174,8 @@ ln -svf /tmp/log $ROOTFS_DIR/dev/log
 ln -svf /tmp/resolv.conf $ROOTFS_DIR/etc/resolv.conf
 
 step "[3/9] Copy GCC 9.2.0 Library"
-cp -v $TOOLS_DIR/$CONFIG_TARGET/lib64/libgcc_s* $ROOTFS_DIR/lib/
-cp -v $TOOLS_DIR/$CONFIG_TARGET/lib64/libatomic* $ROOTFS_DIR/lib/
+cp -v $TOOLS_DIR/$CONFIG_TARGET/lib/libgcc_s* $ROOTFS_DIR/lib/
+cp -v $TOOLS_DIR/$CONFIG_TARGET/lib/libatomic* $ROOTFS_DIR/lib/
 
 step "[4/9] Glibc 2.29"
 extract $SOURCES_DIR/glibc-2.30.tar.xz $BUILD_DIR
