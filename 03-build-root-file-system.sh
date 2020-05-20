@@ -96,7 +96,7 @@ total_build_time=$(timer)
 rm -rf $BUILD_DIR $ROOTFS_DIR
 mkdir -pv $BUILD_DIR $ROOTFS_DIR
 
-step "[1/9] Create root file system directory."
+step "[1/10] Create root file system directory."
 rm -rf $ROOTFS_DIR
 mkdir -pv $ROOTFS_DIR/{boot,bin,dev,etc,lib,media,mnt,opt,proc,root,run,sbin,sys,tmp,usr}
 ln -snvf lib $ROOTFS_DIR/lib
@@ -107,7 +107,7 @@ mkdir -pv $ROOTFS_DIR/usr/{bin,lib,sbin}
 ln -snvf lib $ROOTFS_DIR/usr/lib
 mkdir -pv $ROOTFS_DIR/var/lib
 
-step "[2/9] Creating Essential Files and Symlinks"
+step "[2/10] Creating Essential Files and Symlinks"
 # Create /etc/passwd
 cat > $ROOTFS_DIR/etc/passwd << "EOF"
 root:x:0:0:root:/root:/bin/sh
@@ -173,11 +173,68 @@ ln -svf /tmp $ROOTFS_DIR/var/tmp
 ln -svf /tmp/log $ROOTFS_DIR/dev/log
 ln -svf /tmp/resolv.conf $ROOTFS_DIR/etc/resolv.conf
 
-step "[3/9] Copy GCC 9.2.0 Library"
-cp -v $TOOLS_DIR/$CONFIG_TARGET/lib/libgcc_s* $ROOTFS_DIR/lib/
-cp -v $TOOLS_DIR/$CONFIG_TARGET/lib/libatomic* $ROOTFS_DIR/lib/
+step "[3/10] Gcc 9.2.0 - Static"
+tar -Jxf $SOURCES_DIR/gcc-9.2.0.tar.xz -C $BUILD_DIR
+extract $SOURCES_DIR/gmp-6.1.2.tar.xz $BUILD_DIR/gcc-9.2.0
+mv -v $BUILD_DIR/gcc-9.2.0/gmp-6.1.2 $BUILD_DIR/gcc-9.2.0/gmp
+extract $SOURCES_DIR/mpfr-4.0.2.tar.xz $BUILD_DIR/gcc-9.2.0
+mv -v $BUILD_DIR/gcc-9.2.0/mpfr-4.0.2 $BUILD_DIR/gcc-9.2.0/mpfr
+extract $SOURCES_DIR/mpc-1.1.0.tar.gz $BUILD_DIR/gcc-9.2.0
+mv -v $BUILD_DIR/gcc-9.2.0/mpc-1.1.0 $BUILD_DIR/gcc-9.2.0/mpc
+mkdir -pv $BUILD_DIR/gcc-9.2.0/gcc-build
+( cd $BUILD_DIR/gcc-9.2.0/gcc-build && \
+    MAKEINFO=missing \
+    CFLAGS_FOR_TARGET="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Os" \
+    CXXFLAGS_FOR_TARGET="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Os" \
+    $BUILD_DIR/gcc-9.2.0/configure \
+    $BUILD_DIR/gcc-9.2.0/configure \
+    --prefix=$ROOTFS_DIR/usr \
+    --build=$CONFIG_HOST \
+    --host=$CONFIG_TARGET \
+    --target=$CONFIG_TARGET \
+    --with-build-sysroot=$SYSROOT_DIR \
+    --enable-__cxa_atexit \
+    --with-gnu-ld \
+    --disable-libssp \
+    --disable-multilib \
+    --disable-decimal-float \
+    --disable-libquadmath \
+    --enable-tls \
+    --enable-threads \
+    --with-cpu=arm1176jz-s \
+    --enable-languages=c,c++ \
+    --with-build-time-tools=$TOOLS_DIR/$CONFIG_TARGET/bin \
+    --enable-shared \
+    --disable-libgomp )
+make -j$PARALLEL_JOBS gcc_cv_libc_provides_ssp=yes -C $BUILD_DIR/gcc-9.2.0/gcc-build
+make -j$PARALLEL_JOBS install -C $BUILD_DIR/gcc-9.2.0/gcc-build
+rm -rf $BUILD_DIR/gcc-9.2.0
 
-step "[4/9] Glibc 2.29"
+step "[4/10] Binutils 2.33.1"
+extract $SOURCES_DIR/binutils-2.33.1.tar.xz $BUILD_DIR
+mkdir -pv $BUILD_DIR/binutils-2.33.1/binutils-build
+( cd $BUILD_DIR/binutils-2.33.1/binutils-build && \
+    MAKEINFO=true \
+    $BUILD_DIR/binutils-2.33.1/configure \
+    --prefix=$ROOTFS_DIR/usr \
+    --target=$CONFIG_TARGET \
+    --build=$CONFIG_HOST \
+    --host=$CONFIG_TARGET \
+    --disable-multilib \
+    --disable-werror \
+    --disable-shared \
+    --enable-static \
+    --with-build-sysroot=$SYSROOT_DIR \
+    --enable-poison-system-directories \
+    --disable-sim \
+    --disable-gdb )
+make -j$PARALLEL_JOBS configure-host -C $BUILD_DIR/binutils-2.33.1/binutils-build
+make -j$PARALLEL_JOBS -C $BUILD_DIR/binutils-2.33.1/binutils-build
+make -j$PARALLEL_JOBS install -C $BUILD_DIR/binutils-2.33.1/binutils-build
+rm -rf $BUILD_DIR/binutils-2.33.1
+
+
+step "[5/10] Glibc 2.29"
 extract $SOURCES_DIR/glibc-2.30.tar.xz $BUILD_DIR
 mkdir -pv $BUILD_DIR/glibc-2.30/glibc-build
 ( cd $BUILD_DIR/glibc-2.30/glibc-build && \
@@ -209,7 +266,7 @@ make -j$PARALLEL_JOBS -C $BUILD_DIR/glibc-2.30/glibc-build
 make -j$PARALLEL_JOBS install_root=$ROOTFS_DIR install -C $BUILD_DIR/glibc-2.30/glibc-build
 rm -rf $BUILD_DIR/glibc-2.30
 
-step "[5/9] Busybox 1.31.1"
+step "[6/10] Busybox 1.31.1"
 extract $SOURCES_DIR/busybox-1.31.1.tar.bz2 $BUILD_DIR
 make -j$PARALLEL_JOBS distclean -C $BUILD_DIR/busybox-1.31.1
 make -j$PARALLEL_JOBS ARCH=$CONFIG_LINUX_ARCH defconfig -C $BUILD_DIR/busybox-1.31.1
@@ -398,7 +455,7 @@ fi
 cp -v $BUILD_DIR/busybox-1.31.1/examples/depmod.pl $TOOLS_DIR/bin/depmod.pl
 rm -rf $BUILD_DIR/busybox-1.31.1
 
-step "[6/9] Install Bootscript"
+step "[7/10] Install Bootscript"
 mkdir -pv $ROOTFS_DIR/etc/init.d
 cat > $ROOTFS_DIR/etc/inittab << "EOF"
 # /etc/inittab
@@ -584,7 +641,7 @@ exit $?
 EOF
 chmod -v 0755 $ROOTFS_DIR/etc/init.d/{rcK,rcS,S20urandom,S40network}
 
-step "[7/9] General Network Configuration"
+step "[8/10] General Network Configuration"
 cat > $ROOTFS_DIR/etc/network/interfaces << "EOF"
 auto lo
 iface lo inet loopback
@@ -1010,7 +1067,7 @@ fido            60179/udp			# Ifmail
 
 EOF
 
-step "[8/9] The Bash Shell Startup Files"
+step "[9/10] The Bash Shell Startup Files"
 cat > $ROOTFS_DIR/etc/profile << "EOF"
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
@@ -1035,7 +1092,7 @@ unset i
 EOF
 echo "umask 022" > $ROOTFS_DIR/etc/profile.d/umask.sh
 
-step "[9/9] Creating the /etc/fstab File"
+step "[10/10] Creating the /etc/fstab File"
 cat > $ROOTFS_DIR/etc/fstab << "EOF"
 # <file system>	<mount pt>	<type>	<options>	<dump>	<pass>
 /dev/root	/		ext2	rw,noauto	0	1

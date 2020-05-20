@@ -69,7 +69,7 @@ mkdir -pv $IMAGES_DIR $BUILD_DIR
 echo '#!/bin/sh' > $BUILD_DIR/_fakeroot.fs
 echo "set -e" >> $BUILD_DIR/_fakeroot.fs
 echo "chown -h -R 0:0 $ROOTFS_DIR" >> $BUILD_DIR/_fakeroot.fs
-echo "$TOOLS_DIR/sbin/mkfs.ext2 -d $ROOTFS_DIR $IMAGES_DIR/rootfs.ext2 140M" >> $BUILD_DIR/_fakeroot.fs
+echo "$TOOLS_DIR/sbin/mkfs.ext2 -d $ROOTFS_DIR $IMAGES_DIR/rootfs.ext2 1024M" >> $BUILD_DIR/_fakeroot.fs
 chmod a+x $BUILD_DIR/_fakeroot.fs
 $TOOLS_DIR/usr/bin/fakeroot -- $BUILD_DIR/_fakeroot.fs
 ln -svf rootfs.ext2 $IMAGES_DIR/rootfs.ext4
